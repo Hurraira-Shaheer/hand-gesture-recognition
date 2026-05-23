@@ -2,6 +2,7 @@ absl-py==2.4.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
+attrs==26.1.0
 certifi==2026.5.20
 cffi==2.0.0
 click==8.4.1
@@ -16,12 +17,13 @@ h11==0.16.0
 idna==3.16
 kiwisolver==1.5.0
 matplotlib==3.10.9
-mediapipe==0.10.35
+mediapipe==0.10.9
 numpy==2.2.6
 opencv-contrib-python==4.13.0.92
 opencv-python==4.13.0.92
 packaging==26.2
 pillow==12.2.0
+protobuf==3.20.3
 pycparser==3.0
 pydantic==2.13.4
 pydantic_core==2.46.4
