@@ -2,14 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import './App.css'
 
 const GESTURE_ACTIONS = {
-  open_palm: 'Play / Pause',
-  fist: 'Stop',
-  thumbs_up: 'Volume Up',
+  open_palm:   'Play / Pause',
+  fist:        'Stop',
+  thumbs_up:   'Volume Up',
   thumbs_down: 'Volume Down',
-  peace: 'Next Slide',
-  pointing: 'Select',
-  no_hand: '—',
-  unknown: '—',
+  peace:       'Next Track',
+  pointing:    'Previous Track',
+  no_hand:     '—',
+  unknown:     '—',
 }
 
 function App() {
@@ -22,8 +22,8 @@ function App() {
   const [fingers, setFingers] = useState([])
   const [connected, setConnected] = useState(false)
   const [streaming, setStreaming] = useState(false)
+  const [currentTrack, setCurrentTrack] = useState(null)
 
-  // Start webcam
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
@@ -33,7 +33,6 @@ function App() {
     }
   }, [])
 
-  // Connect WebSocket
   const connectWS = useCallback(() => {
     const ws = new WebSocket('ws://localhost:8000/ws')
 
@@ -57,7 +56,6 @@ function App() {
     wsRef.current = ws
   }, [])
 
-  // Send frames to backend
   const startStreaming = useCallback(() => {
     if (!wsRef.current || !canvasRef.current || !videoRef.current) return
 
@@ -66,14 +64,10 @@ function App() {
 
     intervalRef.current = setInterval(() => {
       if (wsRef.current.readyState !== WebSocket.OPEN) return
-
-      // Draw current video frame to canvas
       ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
-
-      // Convert to base64 JPEG and send
       const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1]
       wsRef.current.send(base64)
-    }, 100) // 10 frames per second — enough for gesture detection
+    }, 100)
 
     setStreaming(true)
   }, [])
@@ -81,6 +75,21 @@ function App() {
   const stopStreaming = useCallback(() => {
     clearInterval(intervalRef.current)
     setStreaming(false)
+  }, [])
+
+  // Poll current track every 3 seconds
+  useEffect(() => {
+    const fetchTrack = () => {
+      fetch('http://127.0.0.1:8000/spotify/current')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) setCurrentTrack(data)
+        })
+        .catch(() => {})
+    }
+    fetchTrack()
+    const interval = setInterval(fetchTrack, 3000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -93,7 +102,7 @@ function App() {
     }
   }, [])
 
-  const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
+  const fingerNames = ['Thumb', 'Index', 'Middle','Ring', 'Pinky']
 
   return (
     <div className="app">
@@ -114,7 +123,6 @@ function App() {
             width={640}
             height={480}
           />
-          {/* Hidden canvas used to capture frames */}
           <canvas
             ref={canvasRef}
             width={320}
@@ -130,6 +138,23 @@ function App() {
         </div>
 
         <div className="info-section">
+
+          {currentTrack && (
+            <div className="now-playing">
+              <div className="section-label">Now Playing</div>
+              <div className="track-info">
+                {currentTrack.cover_url && (
+                  <img src={currentTrack.cover_url} alt="album cover" className="album-cover" />
+                )}
+                <div className="track-details">
+                  <div className="track-name">{currentTrack.name}</div>
+                  <div className="track-artist">{currentTrack.artist}</div>
+                  <div className="track-volume">Volume: {currentTrack.volume}%</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="gesture-display">
             <div className="gesture-label">Detected Gesture</div>
             <div className="gesture-name">{gesture.replace('_', ' ')}</div>
@@ -159,6 +184,7 @@ function App() {
                 </div>
               ))}
           </div>
+
         </div>
       </main>
     </div>
