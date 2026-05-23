@@ -1,8 +1,4 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   background: #050508;
@@ -11,68 +7,138 @@ body {
 }
 
 .app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 48px 24px;
-}
-
-h1 {
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: -1px;
-}
-
-.subtitle {
-  color: #666;
-  margin-top: 8px;
-  font-size: 13px;
-  letter-spacing: 2px;
-}
-
-.gestures {
-  margin-top: 48px;
-}
-
-h2 {
-  font-size: 14px;
-  letter-spacing: 3px;
-  color: #444;
-  text-transform: uppercase;
-  margin-bottom: 24px;
-}
-
-.gesture-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.gesture-card {
-  padding: 20px;
-  border: 1px solid #1a1a2e;
-  background: #080810;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.2s;
 }
 
-.gesture-card:hover {
-  border-color: #00ff8840;
+header {
+  padding: 24px 40px;
+  border-bottom: 1px solid #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+
+.status { font-size: 12px; letter-spacing: 2px; }
+.connected { color: #00ff88; }
+.disconnected { color: #ff3366; }
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+}
+
+.camera-section {
+  padding: 32px;
+  border-right: 1px solid #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+video {
+  width: 100%;
+  height: auto;
+  border: 1px solid #1a1a2e;
+  background: #000;
+}
+
+.camera-controls { display: flex; gap: 12px; }
+
+button {
+  padding: 12px 24px;
+  background: #00ff88;
+  color: #000;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.8; }
+button:disabled { opacity: 0.3; cursor: not-allowed; }
+button.stop { background: #ff3366; color: #fff; }
+
+.info-section {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.gesture-display {
+  padding: 24px;
+  border: 1px solid #1a1a2e;
+  background: #080810;
+}
+
+.gesture-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #444;
+  margin-bottom: 12px;
 }
 
 .gesture-name {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 900;
   color: #00ff88;
+  text-transform: uppercase;
+  letter-spacing: -1px;
 }
 
 .gesture-action {
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
+  margin-top: 8px;
 }
 
-.error {
-  color: #ff3366;
-  font-size: 13px;
+.section-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.fingers { display: flex; flex-direction: column; gap: 6px; }
+
+.finger {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid #1a1a2e;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.finger.extended {
+  border-color: #00ff8840;
+  background: #00ff8808;
+  color: #00ff88;
+}
+
+.finger.closed { color: #444; }
+
+.gesture-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.gesture-row.active {
+  border-color: #00ff8840;
+  background: #00ff8808;
+  color: #00ff88;
 }

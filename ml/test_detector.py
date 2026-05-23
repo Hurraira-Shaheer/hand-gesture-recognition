@@ -22,35 +22,55 @@ def main():
         # Flip horizontally — mirror view feels natural
         frame = cv2.flip(frame, 1)
 
-        landmarks = detector.get_landmarks(frame)
+
+        landmarks, handedness = detector.get_landmarks(frame)
 
         if landmarks:
-            fingers = detector.get_finger_states(landmarks)
+            fingers = detector.get_finger_states(landmarks, handedness)
             gesture = detector.classify_gesture(fingers)
-
-            # Draw landmarks on frame
             frame = detector.draw_landmarks(frame, landmarks)
 
-            # Display gesture name on screen
-            cv2.putText(
-                frame, gesture,
-                (10, 50),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.5, (0, 255, 136), 3
-            )
+            cv2.putText(frame, f"{gesture} ({handedness})",
+                (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                1.2, (0, 255, 136), 3)
 
-            # Show finger states for debugging
             finger_names = ['T', 'I', 'M', 'R', 'P']
             states = ' '.join([
                 f"{n}:{'1' if s else '0'}"
                 for n, s in zip(finger_names, fingers)
             ])
-            cv2.putText(
-                frame, states,
-                (10, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7, (255, 255, 255), 2
-            )
+            cv2.putText(frame, states,
+                (10, 100), cv2.FONT_HERSHEY_SIMPLEX,
+                0.7, (255, 255, 255), 2)
+        # landmarks = detector.get_landmarks(frame)
+
+        # if landmarks:
+        #     fingers = detector.get_finger_states(landmarks)
+        #     gesture = detector.classify_gesture(fingers)
+
+        #     # Draw landmarks on frame
+        #     frame = detector.draw_landmarks(frame, landmarks)
+
+        #     # Display gesture name on screen
+        #     cv2.putText(
+        #         frame, gesture,
+        #         (10, 50),
+        #         cv2.FONT_HERSHEY_SIMPLEX,
+        #         1.5, (0, 255, 136), 3
+        #     )
+
+        #     # Show finger states for debugging
+        #     finger_names = ['T', 'I', 'M', 'R', 'P']
+        #     states = ' '.join([
+        #         f"{n}:{'1' if s else '0'}"
+        #         for n, s in zip(finger_names, fingers)
+        #     ])
+        #     cv2.putText(
+        #         frame, states,
+        #         (10, 100),
+        #         cv2.FONT_HERSHEY_SIMPLEX,
+        #         0.7, (255, 255, 255), 2
+        #     )
 
         cv2.imshow("Gesture Detection", frame)
 
