@@ -1,0 +1,78 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #050508;
+  color: #e8e8f0;
+  font-family: 'Courier New', monospace;
+}
+
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  color: #666;
+  margin-top: 8px;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.gestures {
+  margin-top: 48px;
+}
+
+h2 {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: #444;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.gesture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.gesture-card {
+  padding: 20px;
+  border: 1px solid #1a1a2e;
+  background: #080810;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+
+.gesture-card:hover {
+  border-color: #00ff8840;
+}
+
+.gesture-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #00ff88;
+}
+
+.gesture-action {
+  font-size: 12px;
+  color: #666;
+}
+
+.error {
+  color: #ff3366;
+  font-size: 13px;
+}
