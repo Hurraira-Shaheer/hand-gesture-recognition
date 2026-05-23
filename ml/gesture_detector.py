@@ -84,3 +84,42 @@ class GestureDetector:
             self.mp_hands.HAND_CONNECTIONS
         )
         return frame
+
+
+
+
+from collections import deque
+
+class GestureStabilizer:
+    def __init__(self, window_size=10, threshold=0.6):
+        """
+        window_size — how many recent frames to consider
+        threshold   — what fraction must agree (0.6 = 60%)
+        """
+        self.window = deque(maxlen=window_size)
+        self.threshold = threshold
+        self.last_stable = "no_hand"
+
+    def update(self, gesture):
+        """
+        Feed in raw gesture each frame.
+        Returns stable gesture only when confident enough.
+        """
+        self.window.append(gesture)
+
+        if len(self.window) < self.window.maxlen:
+            return self.last_stable  # not enough data yet
+
+        # Count occurrences of each gesture in window
+        counts = {}
+        for g in self.window:
+            counts[g] = counts.get(g, 0) + 1
+
+        # Find the most common one
+        top_gesture = max(counts, key=counts.get)
+        top_fraction = counts[top_gesture] / len(self.window)
+
+        if top_fraction >= self.threshold:
+            self.last_stable = top_gesture
+
+        return self.last_stable

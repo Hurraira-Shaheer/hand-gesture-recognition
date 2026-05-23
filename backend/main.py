@@ -10,7 +10,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ml.gesture_detector import GestureDetector
+from ml.gesture_detector import GestureDetector, GestureStabilizer
 
 class Gesture(BaseModel):
     id: int
@@ -75,7 +75,9 @@ def get_gesture(gesture_id: int):
     return {"error": "Gesture not found"}
 
 # Initialize detector once — not on every connection
+# detector = GestureDetector()
 detector = GestureDetector()
+stabilizer = GestureStabilizer(window_size=10, threshold=0.6)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -121,20 +123,41 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if landmarks:
                 fingers = detector.get_finger_states(landmarks, handedness)
-                gesture = detector.classify_gesture(fingers)
+                raw_gesture = detector.classify_gesture(fingers)
+                stable_gesture = stabilizer.update(raw_gesture)  # smooth it
+
                 await websocket.send_json({
-                    "gesture": gesture,
+                    "gesture": stable_gesture,
+                    "raw_gesture": raw_gesture,      # useful for debugging
                     "fingers": fingers,
                     "confidence": 1.0,
                     "timestamp": time.time()
                 })
             else:
+                stable_gesture = stabilizer.update("no_hand")
                 await websocket.send_json({
-                    "gesture": "no_hand",
+                    "gesture": stable_gesture,
+                    "raw_gesture": "no_hand",
                     "fingers": [],
                     "confidence": 0.0,
                     "timestamp": time.time()
-                })
+                })            
+            # if landmarks:
+            #     fingers = detector.get_finger_states(landmarks, handedness)
+            #     gesture = detector.classify_gesture(fingers)
+            #     await websocket.send_json({
+            #         "gesture": gesture,
+            #         "fingers": fingers,
+            #         "confidence": 1.0,
+            #         "timestamp": time.time()
+            #     })
+            # else:
+            #     await websocket.send_json({
+            #         "gesture": "no_hand",
+            #         "fingers": [],
+            #         "confidence": 0.0,
+            #         "timestamp": time.time()
+            #     })
 
     except WebSocketDisconnect:
         print("Client disconnected")
