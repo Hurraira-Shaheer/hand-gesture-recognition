@@ -142,3 +142,41 @@ button.stop { background: #ff3366; color: #fff; }
   background: #00ff8808;
   color: #00ff88;
 }
+
+.now-playing {
+  padding: 20px;
+  border: 1px solid #1a1a2e;
+  background: #080810;
+}
+
+.track-info {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.album-cover {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #1a1a2e;
+}
+
+.track-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8e8f0;
+}
+
+.track-artist {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.track-volume {
+  font-size: 11px;
+  color: #444;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}

@@ -1,3 +1,4 @@
+from backend.spotify import play_pause, next_track, previous_track, volume_up, volume_down, stop, get_current_track
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,9 +9,21 @@ import cv2
 import time
 import sys
 import os
+from fastapi.responses import RedirectResponse
+from spotipy.oauth2 import SpotifyOAuth
+
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ml.gesture_detector import GestureDetector, GestureStabilizer
+
+GESTURE_ACTION_MAP = {
+    "open_palm":   play_pause,
+    "fist":        stop,
+    "thumbs_up":   volume_up,
+    "thumbs_down": volume_down,
+    "peace":       next_track,
+    "pointing":    previous_track,
+}
 
 class Gesture(BaseModel):
     id: int
@@ -48,6 +61,22 @@ SUPPORTED_GESTURES = [
 
 # --- Routes ---
 
+from fastapi.responses import RedirectResponse
+from spotipy.oauth2 import SpotifyOAuth
+import os
+
+@app.get("/callback")
+def spotify_callback(code: str):
+    auth_manager = SpotifyOAuth(
+        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+        redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+        scope="user-modify-playback-state user-read-playback-state",
+        cache_path=".spotify_cache"
+    )
+    auth_manager.get_access_token(code)
+    return {"status": "authenticated successfully"}
+
 @app.get("/")
 def root():
     return {
@@ -79,17 +108,38 @@ def get_gesture(gesture_id: int):
 detector = GestureDetector()
 stabilizer = GestureStabilizer(window_size=10, threshold=0.6)
 
+@app.get("/spotify/current")
+def current_track():
+    return get_current_track() or {"error": "Nothing playing"}
+
+@app.post("/spotify/{action}")
+def spotify_action(action: str):
+    actions = {
+        "play_pause": play_pause,
+        "next": next_track,
+        "previous": previous_track,
+        "volume_up": volume_up,
+        "volume_down": volume_down,
+        "stop": stop,
+    }
+    if action not in actions:
+        return {"error": f"Unknown action: {action}"}
+    return actions[action]()
+
+last_action_time = 0
+last_action_gesture = None
+COOLDOWN_SECONDS = 2
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    global last_action_time, last_action_gesture
     await websocket.accept()
     print("Client connected")
 
     try:
         while True:
-            # Receive base64 encoded frame from browser
             data = await websocket.receive_text()
 
-            # Decode base64 → bytes → numpy array → OpenCV image
             img_bytes = base64.b64decode(data)
             np_arr = np.frombuffer(img_bytes, np.uint8)
             frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -98,40 +148,34 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_json({"gesture": "unknown", "confidence": 0.0})
                 continue
 
-            # # Run detection
-            # landmarks = detector.get_landmarks(frame)
-
-            # if landmarks:
-            #     fingers = detector.get_finger_states(landmarks)
-            #     gesture = detector.classify_gesture(fingers)
-            #     await websocket.send_json({
-            #         "gesture": gesture,
-            #         "fingers": fingers,
-            #         "confidence": 1.0,
-            #         "timestamp": time.time()
-            #     })
-            # else:
-            #     await websocket.send_json({
-            #         "gesture": "no_hand",
-            #         "fingers": [],
-            #         "confidence": 0.0,
-            #         "timestamp": time.time()
-            #     })
-            
-            # Run detection
             landmarks, handedness = detector.get_landmarks(frame)
 
             if landmarks:
                 fingers = detector.get_finger_states(landmarks, handedness)
                 raw_gesture = detector.classify_gesture(fingers)
-                stable_gesture = stabilizer.update(raw_gesture)  # smooth it
+                stable_gesture = stabilizer.update(raw_gesture)
+
+                action_result = None
+                current_time = time.time()
+
+                if (stable_gesture in GESTURE_ACTION_MAP and
+                    stable_gesture not in ["no_hand", "unknown"] and
+                    (stable_gesture != last_action_gesture or
+                     current_time - last_action_time > COOLDOWN_SECONDS)):
+                    try:
+                        action_result = GESTURE_ACTION_MAP[stable_gesture]()
+                        last_action_time = current_time
+                        last_action_gesture = stable_gesture
+                    except Exception as e:
+                        action_result = {"error": str(e)}
 
                 await websocket.send_json({
                     "gesture": stable_gesture,
-                    "raw_gesture": raw_gesture,      # useful for debugging
+                    "raw_gesture": raw_gesture,
                     "fingers": fingers,
                     "confidence": 1.0,
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
+                    "action": action_result
                 })
             else:
                 stable_gesture = stabilizer.update("no_hand")
@@ -140,24 +184,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     "raw_gesture": "no_hand",
                     "fingers": [],
                     "confidence": 0.0,
-                    "timestamp": time.time()
-                })            
-            # if landmarks:
-            #     fingers = detector.get_finger_states(landmarks, handedness)
-            #     gesture = detector.classify_gesture(fingers)
-            #     await websocket.send_json({
-            #         "gesture": gesture,
-            #         "fingers": fingers,
-            #         "confidence": 1.0,
-            #         "timestamp": time.time()
-            #     })
-            # else:
-            #     await websocket.send_json({
-            #         "gesture": "no_hand",
-            #         "fingers": [],
-            #         "confidence": 0.0,
-            #         "timestamp": time.time()
-            #     })
+                    "timestamp": time.time(),
+                    "action": None
+                })
 
     except WebSocketDisconnect:
         print("Client disconnected")
