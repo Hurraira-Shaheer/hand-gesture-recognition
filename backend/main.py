@@ -96,11 +96,31 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_json({"gesture": "unknown", "confidence": 0.0})
                 continue
 
+            # # Run detection
+            # landmarks = detector.get_landmarks(frame)
+
+            # if landmarks:
+            #     fingers = detector.get_finger_states(landmarks)
+            #     gesture = detector.classify_gesture(fingers)
+            #     await websocket.send_json({
+            #         "gesture": gesture,
+            #         "fingers": fingers,
+            #         "confidence": 1.0,
+            #         "timestamp": time.time()
+            #     })
+            # else:
+            #     await websocket.send_json({
+            #         "gesture": "no_hand",
+            #         "fingers": [],
+            #         "confidence": 0.0,
+            #         "timestamp": time.time()
+            #     })
+            
             # Run detection
-            landmarks = detector.get_landmarks(frame)
+            landmarks, handedness = detector.get_landmarks(frame)
 
             if landmarks:
-                fingers = detector.get_finger_states(landmarks)
+                fingers = detector.get_finger_states(landmarks, handedness)
                 gesture = detector.classify_gesture(fingers)
                 await websocket.send_json({
                     "gesture": gesture,
