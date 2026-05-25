@@ -48,24 +48,24 @@ Music Control
 ---
 
 ## Project Structure
-hand-gesture-recognition/
-├── backend/
-│   ├── main.py          # FastAPI app — REST routes + WebSocket endpoint
-│   └── spotify.py       # Spotify Web API integration
-├── frontend/
-│   └── src/
-│       ├── App.jsx      # Main React component
-│       └── App.css      # Styles
-├── ml/
-│   ├── gesture_detector.py   # MediaPipe pipeline + gesture classifier
-│   ├── collect_data.py       # Data collection script for ML training
-│   └── train_model.py        # SVM training pipeline (future improvement)
-├── docs/
-│   └── architecture.md  # Architecture decisions
-├── Dockerfile.backend
-├── Dockerfile.frontend
-├── docker-compose.yml
-└── requirements.txt
+    hand-gesture-recognition/
+    ├── backend/
+    │   ├── main.py          # FastAPI app — REST routes + WebSocket endpoint
+    │   └── spotify.py       # Spotify Web API integration
+    ├── frontend/
+    │   └── src/
+    │       ├── App.jsx      # Main React component
+    │       └── App.css      # Styles
+    ├── ml/
+    │   ├── gesture_detector.py   # MediaPipe pipeline + gesture classifier
+    │   ├── collect_data.py       # Data collection script for ML training
+    │   └── train_model.py        # SVM training pipeline (future improvement)
+    ├── docs/
+    │   └── architecture.md  # Architecture decisions
+    ├── Dockerfile.backend
+    ├── Dockerfile.frontend
+    ├── docker-compose.yml
+    └── requirements.txt
 
 ---
 
