@@ -18,4 +18,5 @@ Thumbs.db
 *.swp
 
 #spotify
-.spotify_cache
+.spotify_cacheml/gesture_data.csv
+ml/*.pkl
