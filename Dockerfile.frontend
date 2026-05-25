@@ -1,0 +1,20 @@
+# Start from official Node.js image
+FROM node:20-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first — same caching trick
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy rest of frontend code
+COPY frontend/ .
+
+# Expose port 5173
+EXPOSE 5173
+
+# Run Vite dev server
+CMD ["npm", "run", "dev", "--", "--host"]

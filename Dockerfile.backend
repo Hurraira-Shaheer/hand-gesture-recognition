@@ -1,0 +1,30 @@
+# Start from official Python 3.10 image
+FROM python:3.10-slim
+
+# Set working directory inside container
+WORKDIR /app
+
+# Install system dependencies OpenCV needs
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+    
+# Copy requirements first — Docker caches this layer
+# So if requirements don't change, it won't reinstall packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the code
+COPY backend/ ./backend/
+COPY ml/ ./ml/
+
+# Expose port 8000
+EXPOSE 8000
+
+# Command to run the backend
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
