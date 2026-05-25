@@ -1,0 +1,9 @@
+venv/
+node_modules/
+__pycache__/
+*.pyc
+.env
+.spotify_cache
+ml/gesture_data.csv
+ml/*.pkl
+.git/
