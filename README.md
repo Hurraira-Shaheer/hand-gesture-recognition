@@ -2,7 +2,6 @@
 
 A real-time gesture recognition system that controls Spotify playback using hand gestures — no touch required. Built with a Python/FastAPI backend, MediaPipe computer vision pipeline, and a React frontend communicating over WebSockets.
 
-![Demo](docs/demo.gif)
 
 ---
 
